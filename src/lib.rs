@@ -713,7 +713,7 @@ impl<'py> Iterator for ListOrTupleIterator<'py> {
 }
 
 #[pymodule]
-fn libsql(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn aiolibsql(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     let _ = tracing_subscriber::fmt::try_init();
     m.add("LEGACY_TRANSACTION_CONTROL", LEGACY_TRANSACTION_CONTROL)?;
     m.add("paramstyle", "qmark")?;
