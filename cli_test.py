@@ -10,7 +10,6 @@ PASS = "✅"
 FAIL = "❌"
 results = []
 
-
 def report(name: str, passed: bool, detail: str = ""):
     status = PASS if passed else FAIL
     results.append((name, passed))
@@ -19,15 +18,11 @@ def report(name: str, passed: bool, detail: str = ""):
         msg += f"  →  {detail}"
     print(msg)
 
-
 async def main():
     print("=" * 60)
     print("  aiolibsql — Full API Test Suite")
     print("=" * 60)
 
-    # ──────────────────────────────────────────────
-    # 1. connect()
-    # ──────────────────────────────────────────────
     print("\n── Module Functions ──")
 
     try:
@@ -37,9 +32,6 @@ async def main():
         report("connect()", False, str(e))
         return
 
-    # ──────────────────────────────────────────────
-    # 2. Connection properties
-    # ──────────────────────────────────────────────
     print("\n── Connection Properties ──")
 
     try:
@@ -70,9 +62,6 @@ async def main():
     except Exception as e:
         report("in_transaction (getter)", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 3. Connection.cursor()
-    # ──────────────────────────────────────────────
     print("\n── Cursor Creation ──")
 
     try:
@@ -81,9 +70,6 @@ async def main():
     except Exception as e:
         report("cursor()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 4. Connection.execute() — CREATE TABLE
-    # ──────────────────────────────────────────────
     print("\n── Connection.execute() ──")
 
     try:
@@ -100,7 +86,6 @@ async def main():
     except Exception as e:
         report("execute() — CREATE TABLE", False, str(e))
 
-    # INSERT with tuple params
     try:
         cursor = await conn.execute(
             "INSERT INTO test_table (name, age, score) VALUES (?, ?, ?)",
@@ -110,7 +95,6 @@ async def main():
     except Exception as e:
         report("execute() — INSERT (tuple params)", False, str(e))
 
-    # INSERT with list params
     try:
         cursor = await conn.execute(
             "INSERT INTO test_table (name, age, score) VALUES (?, ?, ?)",
@@ -120,7 +104,6 @@ async def main():
     except Exception as e:
         report("execute() — INSERT (list params)", False, str(e))
 
-    # INSERT with NULL
     try:
         await conn.execute(
             "INSERT INTO test_table (name, age, score) VALUES (?, ?, ?)",
@@ -130,7 +113,6 @@ async def main():
     except Exception as e:
         report("execute() — INSERT (NULL values)", False, str(e))
 
-    # INSERT with BLOB
     try:
         await conn.execute(
             "INSERT INTO test_table (name, age, score, data) VALUES (?, ?, ?, ?)",
@@ -140,14 +122,12 @@ async def main():
     except Exception as e:
         report("execute() — INSERT (BLOB data)", False, str(e))
 
-    # SELECT
     try:
         cursor = await conn.execute("SELECT * FROM test_table")
         report("execute() — SELECT", True)
     except Exception as e:
         report("execute() — SELECT", False, str(e))
 
-    # UPDATE
     try:
         await conn.execute(
             "UPDATE test_table SET age = ? WHERE name = ?", (29, "Alice")
@@ -156,16 +136,12 @@ async def main():
     except Exception as e:
         report("execute() — UPDATE", False, str(e))
 
-    # DELETE
     try:
         await conn.execute("DELETE FROM test_table WHERE name = ?", ("Charlie",))
         report("execute() — DELETE", True)
     except Exception as e:
         report("execute() — DELETE", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 5. Connection.executemany()
-    # ──────────────────────────────────────────────
     print("\n── Connection.executemany() ──")
 
     try:
@@ -181,9 +157,6 @@ async def main():
     except Exception as e:
         report("executemany()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 6. Connection.executescript()
-    # ──────────────────────────────────────────────
     print("\n── Connection.executescript() ──")
 
     try:
@@ -197,9 +170,6 @@ async def main():
     except Exception as e:
         report("executescript()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 7. Cursor.execute()
-    # ──────────────────────────────────────────────
     print("\n── Cursor.execute() ──")
 
     try:
@@ -209,9 +179,6 @@ async def main():
     except Exception as e:
         report("Cursor.execute()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 8. Cursor.fetchall()
-    # ──────────────────────────────────────────────
     print("\n── Cursor.fetchall() ──")
 
     try:
@@ -223,9 +190,6 @@ async def main():
     except Exception as e:
         report("Cursor.fetchall()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 9. Cursor.fetchone()
-    # ──────────────────────────────────────────────
     print("\n── Cursor.fetchone() ──")
 
     try:
@@ -234,17 +198,13 @@ async def main():
         row = await cur.fetchone()
         report("Cursor.fetchone()", True, f"first row = {row}")
 
-        # Fetch remaining to exhaust, then check None
-        await cur.fetchone()  # 2nd
-        await cur.fetchone()  # 3rd
-        none_row = await cur.fetchone()  # should be None
+        await cur.fetchone()
+        await cur.fetchone()
+        none_row = await cur.fetchone()
         report("Cursor.fetchone() — exhausted", none_row is None, f"value={none_row!r}")
     except Exception as e:
         report("Cursor.fetchone()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 10. Cursor.fetchmany()
-    # ──────────────────────────────────────────────
     print("\n── Cursor.fetchmany() ──")
 
     try:
@@ -253,15 +213,11 @@ async def main():
         batch = await cur.fetchmany(2)
         report("Cursor.fetchmany(size=2)", True, f"got {len(batch)} rows")
 
-        # Default size (arraysize=1)
         batch2 = await cur.fetchmany()
         report("Cursor.fetchmany() — default size", True, f"got {len(batch2)} rows")
     except Exception as e:
         report("Cursor.fetchmany()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 11. Cursor.arraysize
-    # ──────────────────────────────────────────────
     print("\n── Cursor.arraysize ──")
 
     try:
@@ -272,9 +228,6 @@ async def main():
     except Exception as e:
         report("Cursor.arraysize", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 12. Cursor.description
-    # ──────────────────────────────────────────────
     print("\n── Cursor.description ──")
 
     try:
@@ -285,9 +238,6 @@ async def main():
     except Exception as e:
         report("Cursor.description", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 13. Cursor.lastrowid
-    # ──────────────────────────────────────────────
     print("\n── Cursor.lastrowid ──")
 
     try:
@@ -301,9 +251,6 @@ async def main():
     except Exception as e:
         report("Cursor.lastrowid", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 14. Cursor.rowcount
-    # ──────────────────────────────────────────────
     print("\n── Cursor.rowcount ──")
 
     try:
@@ -312,9 +259,6 @@ async def main():
     except Exception as e:
         report("Cursor.rowcount", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 15. Cursor.executemany()
-    # ──────────────────────────────────────────────
     print("\n── Cursor.executemany() ──")
 
     try:
@@ -327,9 +271,6 @@ async def main():
     except Exception as e:
         report("Cursor.executemany()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 16. Cursor.executescript()
-    # ──────────────────────────────────────────────
     print("\n── Cursor.executescript() ──")
 
     try:
@@ -343,9 +284,6 @@ async def main():
     except Exception as e:
         report("Cursor.executescript()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 17. Connection.commit()
-    # ──────────────────────────────────────────────
     print("\n── Connection.commit() ──")
 
     try:
@@ -354,9 +292,6 @@ async def main():
     except Exception as e:
         report("commit()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 18. Connection.rollback()
-    # ──────────────────────────────────────────────
     print("\n── Connection.rollback() ──")
 
     try:
@@ -365,9 +300,6 @@ async def main():
     except Exception as e:
         report("rollback()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 19. Cursor.close()
-    # ──────────────────────────────────────────────
     print("\n── Cursor.close() ──")
 
     try:
@@ -377,9 +309,6 @@ async def main():
     except Exception as e:
         report("Cursor.close()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 20. Connection.close()
-    # ──────────────────────────────────────────────
     print("\n── Connection.close() ──")
 
     try:
@@ -388,9 +317,6 @@ async def main():
     except Exception as e:
         report("Connection.close()", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 21. async with (context manager)
-    # ──────────────────────────────────────────────
     print("\n── Async Context Manager ──")
 
     try:
@@ -404,9 +330,6 @@ async def main():
     except Exception as e:
         report("async with (__aenter__/__aexit__)", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # 22. Module constants
-    # ──────────────────────────────────────────────
     print("\n── Module Constants ──")
 
     try:
@@ -439,9 +362,6 @@ async def main():
     except Exception as e:
         report("VERSION", False, str(e))
 
-    # ──────────────────────────────────────────────
-    # Summary
-    # ──────────────────────────────────────────────
     print("\n" + "=" * 60)
     passed = sum(1 for _, p in results if p)
     total = len(results)
@@ -454,7 +374,6 @@ async def main():
             if not p:
                 print(f"    {FAIL} {name}")
     print("=" * 60)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
