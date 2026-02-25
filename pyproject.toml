@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "aiolibsql"
-version = "0.2.0"
+version = "0.2.1"
 description = "A fully asynchronous Python wrapper for libSQL, built with Rust and PyO3"
 requires-python = ">=3.8"
 license = {text = "MIT"}

@@ -755,12 +755,7 @@ fn create_pool<'py>(
         // Create writer connection and apply PRAGMAs
         let writer_conn = db.connect().map_err(to_py_err)?;
         writer_conn.busy_timeout(Duration::from_secs_f64(timeout)).map_err(to_py_err)?;
-        writer_conn.execute("PRAGMA journal_mode=WAL", ()).await.map_err(to_py_err)?;
-        writer_conn.execute("PRAGMA synchronous=NORMAL", ()).await.map_err(to_py_err)?;
-        writer_conn.execute("PRAGMA busy_timeout=5000", ()).await.map_err(to_py_err)?;
-        writer_conn.execute("PRAGMA cache_size=-8000", ()).await.map_err(to_py_err)?;
-        writer_conn.execute("PRAGMA mmap_size=134217728", ()).await.map_err(to_py_err)?;
-        writer_conn.execute("PRAGMA temp_store=MEMORY", ()).await.map_err(to_py_err)?;
+        writer_conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=5000; PRAGMA cache_size=-8000; PRAGMA mmap_size=134217728; PRAGMA temp_store=MEMORY;").await.map_err(to_py_err)?;
 
         // Create reader connections (size - 1 readers)
         let reader_count = size - 1;
@@ -768,11 +763,7 @@ fn create_pool<'py>(
         for _ in 0..reader_count {
             let reader = db.connect().map_err(to_py_err)?;
             reader.busy_timeout(Duration::from_secs_f64(timeout)).map_err(to_py_err)?;
-            reader.execute("PRAGMA journal_mode=WAL", ()).await.map_err(to_py_err)?;
-            reader.execute("PRAGMA synchronous=NORMAL", ()).await.map_err(to_py_err)?;
-            reader.execute("PRAGMA query_only=ON", ()).await.map_err(to_py_err)?;
-            reader.execute("PRAGMA cache_size=-8000", ()).await.map_err(to_py_err)?;
-            reader.execute("PRAGMA mmap_size=134217728", ()).await.map_err(to_py_err)?;
+            reader.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA query_only=ON; PRAGMA cache_size=-8000; PRAGMA mmap_size=134217728;").await.map_err(to_py_err)?;
             readers.push(Arc::new(Mutex::new(reader)));
         }
 

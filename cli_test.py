@@ -20,7 +20,7 @@ def report(name: str, passed: bool, detail: str = ""):
 
 async def main():
     print("=" * 60)
-    print("  aiolibsql — Full API Test Suite")
+    print("  aiolibsql — Full API Test Suite (v0.2.0)")
     print("=" * 60)
 
     print("\n── Module Functions ──")
@@ -329,6 +329,66 @@ async def main():
         report("async with (__aenter__/__aexit__)", True, "context manager works")
     except Exception as e:
         report("async with (__aenter__/__aexit__)", False, str(e))
+
+    print("\n── ConnectionPool API ──")
+
+    try:
+        pool = await aiolibsql.create_pool(":memory:", size=5)
+        report("create_pool()", True, "pool initialized with size=5")
+    except Exception as e:
+        report("create_pool()", False, str(e))
+        pool = None
+
+    if pool:
+        try:
+            await pool.execute("CREATE TABLE pool_test (id INTEGER PRIMARY KEY, val TEXT)")
+            report("pool.execute() — DDL", True)
+        except Exception as e:
+            report("pool.execute() — DDL", False, str(e))
+
+        try:
+            await pool.execute("INSERT INTO pool_test (val) VALUES (?)", ("hello",))
+            report("pool.execute() — INSERT", True)
+        except Exception as e:
+            report("pool.execute() — INSERT", False, str(e))
+
+        try:
+            cursor = await pool.execute("SELECT * FROM pool_test")
+            row = cursor.fetchone()
+            report("pool.execute() — SELECT / fetchone (sync)", row is not None and row[1] == "hello", f"row={row}")
+        except Exception as e:
+            report("pool.execute() — SELECT", False, str(e))
+
+        try:
+            await pool.executemany(
+                "INSERT INTO pool_test (val) VALUES (?)",
+                [("a",), ("b",), ("c",)]
+            )
+            report("pool.executemany()", True, "inserted 3 rows")
+        except Exception as e:
+            report("pool.executemany()", False, str(e))
+
+        try:
+            await pool.executebatch([
+                ("INSERT INTO pool_test (val) VALUES (?)", ("batch1",)),
+                ("INSERT INTO pool_test (val) VALUES (?)", ("batch2",)),
+                ("UPDATE pool_test SET val = ? WHERE val = ?", ("updated", "batch1")),
+            ])
+            report("pool.executebatch()", True, "ran atomic batch of 3 statements")
+        except Exception as e:
+            report("pool.executebatch()", False, str(e))
+
+        try:
+            async with pool:
+                report("pool async with", True)
+        except Exception as e:
+            report("pool async with", False, str(e))
+
+        try:
+            await pool.close()
+            report("pool.close()", True)
+        except Exception as e:
+            report("pool.close()", False, str(e))
 
     print("\n── Module Constants ──")
 
