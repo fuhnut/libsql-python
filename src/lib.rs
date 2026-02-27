@@ -11,7 +11,7 @@ use pyo3_async_runtimes::tokio::future_into_py;
 
 
 const LEGACY_TRANSACTION_CONTROL: i32 = -1;
-const VERSION: &str = "0.2.7";
+const VERSION: &str = "0.2.8";
 
 enum ListOrTuple {
     List(Py<PyList>),
